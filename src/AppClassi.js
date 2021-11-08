@@ -1,5 +1,5 @@
 import React,{Component} from "react";
-import logo from './logo.svg';
+import ListaComponente from "./component/ListaComponente";
 import './App.css';
 
 const list = [
@@ -28,6 +28,8 @@ const testComponente = (props)=>{
         fontSize: 25}}>{props.label}</label>
 }
 
+
+/*
 const LiComponenente = (props)=>{
     const {item} = props;
     console.log('Render Test LiComponenente',item)
@@ -44,7 +46,7 @@ const LiComponenente = (props)=>{
         </li>
     );
 }
-
+*/
 
 
 let     bloccoHtml = '';
@@ -221,7 +223,7 @@ class AppClassi extends Component{
                 })}
                 <br />
                 {list.map(function (item) {
-                    return (<LiComponenente key={item.objectID} item={item} ></LiComponenente>);
+                    return (<ListaComponente key={item.objectID} item={item} ></ListaComponente>);
                 })}
                 {bloccoHtml}
                 {this.testStringa()}
