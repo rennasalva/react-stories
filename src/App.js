@@ -4,6 +4,7 @@ import List from "./components/stories/list.component";
 import Searchform from "./components/search/searchform.component";
 import Utility from "./utility";
 import axios from 'axios';
+import ApiConfig from "./utility/api";
 
 
 const INITIAL_STATE = [
@@ -26,7 +27,6 @@ const INITIAL_STATE = [
 ];
 
 const getUrl = (searchTerm, page) => `${Utility.ApiConfig.url}${Utility.ApiConfig.url_search}?${Utility.ApiConfig.param_search}${searchTerm}&${Utility.ApiConfig.param_page}${page}`;
-
 const  callServerApi = (url) =>{
     try{
         return axios.get(url);
@@ -48,7 +48,7 @@ class App extends React.Component{
         super();
         this.state = {
             list : INITIAL_STATE,
-            searchTerm: '',
+            searchTerm: 'React',
             data : [],
             page : 0,
             sort :{
@@ -63,13 +63,19 @@ class App extends React.Component{
     componentDidMount() {
         console.log('componentDidMount');
         try{
-
+            this.setState((prevState)=>{
+                return {
+                    ...prevState,
+                    isLoading: true
+                }
+            });
             loadData().then(result=>{
                 this.setState((prevState)=>{
                     return {
                         ...prevState,
                         list:result.data.hits,
-                        page: result.data.page
+                        page: result.data.page,
+                        isLoading: false
                     }
                 });
             });
@@ -143,6 +149,12 @@ class App extends React.Component{
         const {page,searchTerm} = this.state;
         let lastUrl = getUrl(searchTerm,page+1);
         console.log(lastUrl);
+        this.setState((prevState)=>{
+            return {
+                ...prevState,
+                isLoading: true
+            }
+        });
         const result = await callServerApi(lastUrl);
         console.log(result);
 
@@ -150,6 +162,40 @@ class App extends React.Component{
             this.setState((prevState)=>{
                 return {
                     ...prevState,
+                    isLoading: false,
+                    list:result.data.hits,
+                    page: result.data.page
+                }
+            });
+        }
+        else{
+            this.setState((prevState)=>{
+                return {
+                    ...prevState,
+                    isError: true
+                }
+            });
+        }
+    }
+
+    handlePrev = async ()=>{
+        const {page,searchTerm} = this.state;
+        let lastUrl = getUrl(searchTerm,page-1);
+        console.log(lastUrl);
+        this.setState((prevState)=>{
+            return {
+                ...prevState,
+                isLoading: true
+            }
+        });
+        const result = await callServerApi(lastUrl);
+        console.log(result);
+
+        if(result){
+            this.setState((prevState)=>{
+                return {
+                    ...prevState,
+                    isLoading: false,
                     list:result.data.hits,
                     page: result.data.page
                 }
@@ -166,9 +212,10 @@ class App extends React.Component{
     }
 
     render() {
-        const {list,sort,searchTerm,isError,isLoading} = this.state;
+        const {list,sort,searchTerm,isError,isLoading,page} = this.state;
       return (
-          <div className="homepage">
+          <div className="container">
+                <h1 className="title">My React Articles</h1>
                 <Searchform searchTerm={searchTerm}
                             onSearchInput={this.handleSearchInput}
                             onSearchSubmit={this.handleSearchSubmit}
@@ -180,13 +227,26 @@ class App extends React.Component{
                       sort={sort}
                 />
 
-              {isLoading ? (
-                  <p>Loading ...</p>
-              ) : (
-                  <button type="button" onClick={this.handleMore}>
-                      More
-                  </button>
-              )}
+              {
+                  isLoading ? (
+                    <p>Loading ...</p>
+                    )
+                    : (page > 0) ?(
+                            <>
+                              <button class="button button_small" type="button" onClick={this.handlePrev}>
+                                  Prev Page
+                              </button>
+                              <button class="button button_small" type="button" onClick={this.handleMore}>
+                                  Next Page
+                              </button>
+                            </>
+                      ):
+                          (
+                              <button class="button button_small" type="button" onClick={this.handleMore}>
+                                  Next Page
+                              </button>
+                          )
+              }
           </div>
     );
   }
